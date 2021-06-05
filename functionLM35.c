@@ -1,12 +1,12 @@
 #include <REGX52.H>
 #include "functionLM35.h"
-#define ADC_OUT P0
-sbit LCD_RS	= P3^1;
-sbit LCD_EN	= P3^3;
-sbit LCD_D4	= P1^0;
-sbit LCD_D5 = P1^1;
-sbit LCD_D6 = P1^2;
-sbit LCD_D7 = P1^3;
+#define ADC_OUT P1
+sbit LCD_RS	= P0^0;
+sbit LCD_EN	= P0^2;
+sbit LCD_D4	= P0^4;
+sbit LCD_D5 = P0^5;
+sbit LCD_D6 = P0^6;
+sbit LCD_D7 = P0^7;
 sbit ADC_A	= P2^0;
 sbit ADC_B	= P2^1;
 sbit ADC_C  = P2^2;
@@ -15,7 +15,6 @@ sbit ADC_START=P2^4;
 sbit ADC_EOC= P2^5;
 sbit ADC_OE = P2^6;
 sbit ADC_CLK= P2^7;
-
 void delay_us(unsigned int us){
 	unsigned int i;
 	for(i=0;i<us;i++);
@@ -107,9 +106,6 @@ void LCD_pstr(char* str){
 
 void LCD_display_Tlim(unsigned char T)
 	{
-		/*LCD_pstr(" ---CAI DAT---");
-		LCD_gotoxy(0,1);
-		delay_us(5);*/
 		LCD_pstr(" SET ALARM:");
 		LCD_pchar((T/100)+48);
 		LCD_pchar(((T%100)/10)+48);
@@ -139,6 +135,7 @@ ADC 0808 FUNCTION
 unsigned char ADC_read()
 {
 	unsigned char kq; 
+	ADC_OUT=0xff;
 	ADC_A=0;
 	ADC_B=0;
 	ADC_C=0;

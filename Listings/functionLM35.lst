@@ -1,0 +1,218 @@
+C51 COMPILER V9.60.0.0   FUNCTIONLM35                                                      05/28/2021 16:49:43 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE FUNCTIONLM35
+OBJECT MODULE PLACED IN .\Objects\functionLM35.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE functionLM35.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\functionLM35.lst) TABS(2) OBJECT(.\Objects\functionLM35.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          #include "functionLM35.h"
+   3          /*#define ADC_OUT P0
+   4          sbit LCD_RS = P3^1;
+   5          sbit LCD_EN = P3^3;
+   6          sbit LCD_D4 = P1^0;
+   7          sbit LCD_D5 = P1^1;
+   8          sbit LCD_D6 = P1^2;
+   9          sbit LCD_D7 = P1^3;
+  10          sbit ADC_A  = P2^0;
+  11          sbit ADC_B  = P2^1;
+  12          sbit ADC_C  = P2^2;
+  13          sbit ADC_ALE= P2^3;
+  14          sbit ADC_START=P2^4;
+  15          sbit ADC_EOC= P2^5;
+  16          sbit ADC_OE = P2^6;
+  17          sbit ADC_CLK= P2^7;*/
+  18          
+  19          #define ADC_OUT P1
+  20          sbit LCD_RS = P0^0;
+  21          sbit LCD_EN = P0^2;
+  22          sbit LCD_D4 = P0^4;
+  23          sbit LCD_D5 = P0^5;
+  24          sbit LCD_D6 = P0^6;
+  25          sbit LCD_D7 = P0^7;
+  26          sbit ADC_A  = P2^0;
+  27          sbit ADC_B  = P2^1;
+  28          sbit ADC_C  = P2^2;
+  29          sbit ADC_ALE= P2^3;
+  30          sbit ADC_START=P2^4;
+  31          sbit ADC_EOC= P2^5;
+  32          sbit ADC_OE = P2^6;
+  33          sbit ADC_CLK= P2^7;
+  34          void delay_us(unsigned int us){
+  35   1        unsigned int i;
+  36   1        for(i=0;i<us;i++);
+  37   1      }
+  38          void delay_ms(unsigned int ms){
+  39   1        unsigned int i, j;
+  40   1        for(i=0;i<ms;i++)
+  41   1          for(j=0;j<123;j++);
+  42   1      }
+  43          /*-------------------------------------*-
+  44            Lcd_ENABLE function
+  45          -*-------------------------------------*/
+  46          void LCD_enable()
+  47          {
+  48   1        LCD_EN = 1u;
+  49   1        delay_us(3u);
+  50   1        LCD_EN=0;
+  51   1        delay_us(30u);
+  52   1      }
+  53          /*-------------------------------------*-
+  54            Lcd_Write_High_Nibble - Local Function
+C51 COMPILER V9.60.0.0   FUNCTIONLM35                                                      05/28/2021 16:49:43 PAGE 2   
+
+  55          -*-------------------------------------*/
+  56          void LCD_send4bit_high(unsigned char b)
+  57          {
+  58   1        LCD_D7 = b & 0x80;
+  59   1        LCD_D6 = b & 0x40;
+  60   1        LCD_D5 = b & 0x20;
+  61   1        LCD_D4 = b & 0x10;  
+  62   1      }
+  63          
+  64          /*-------------------------------------*-
+  65            Lcd_Write_Low - Local Function
+  66          -*-------------------------------------*/
+  67          void LCD_send4bit_low(unsigned char b)
+  68          {
+  69   1        LCD_D7 = b & 0x08;
+  70   1        LCD_D6 = b & 0x04;
+  71   1        LCD_D5 = b & 0x02;
+  72   1        LCD_D4 = b & 0x01;
+  73   1      }
+  74          
+  75          void LCD_sendCMD(unsigned char cmd){
+  76   1        LCD_send4bit_high(cmd);
+  77   1        LCD_enable();
+  78   1        LCD_send4bit_low(cmd);
+  79   1        LCD_enable();
+  80   1      }
+  81          void LCD_clear(){
+  82   1        LCD_RS=0;
+  83   1        LCD_sendCMD(0x01);
+  84   1        delay_us(10u);
+  85   1      }
+  86          void LCD_init(){
+  87   1        LCD_send4bit_low(0x00);
+  88   1        delay_ms(20u);
+  89   1        LCD_RS=0;
+  90   1        LCD_send4bit_low(0x03);
+  91   1        LCD_enable();
+  92   1        delay_ms(5u);
+  93   1        LCD_enable();
+  94   1        delay_us(100u);
+  95   1        LCD_send4bit_low(0x02);
+  96   1        LCD_enable();
+  97   1        LCD_sendCMD(0x28); //giao tiep 4bit, 2 hang, ky tu 5x8
+  98   1        LCD_sendCMD(0x0c); // cho phep hien thi man hinh
+  99   1        LCD_sendCMD(0x06); 
+ 100   1        LCD_sendCMD(0x01);
+ 101   1      }
+ 102          
+ 103          void LCD_gotoxy(unsigned int x, unsigned int y){
+ 104   1        unsigned char add;
+ 105   1        if(!y) add=(0x80+x);
+ 106   1        else add=(0xc0+x);
+ 107   1        LCD_sendCMD(add);
+ 108   1        delay_us(10);
+ 109   1      }
+ 110          
+ 111          void LCD_pchar(unsigned char c){
+ 112   1        LCD_RS=1;
+ 113   1        LCD_sendCMD(c);
+ 114   1        LCD_RS=0;
+ 115   1      }
+ 116          void LCD_pstr(char* str){
+C51 COMPILER V9.60.0.0   FUNCTIONLM35                                                      05/28/2021 16:49:43 PAGE 3   
+
+ 117   1        while (*str){
+ 118   2        LCD_pchar(*str);
+ 119   2        str++;
+ 120   2        }
+ 121   1      }
+ 122          
+ 123          void LCD_display_Tlim(unsigned char T)
+ 124            {
+ 125   1          LCD_pstr(" SET ALARM:");
+ 126   1          LCD_pchar((T/100)+48);
+ 127   1          LCD_pchar(((T%100)/10)+48);
+ 128   1          LCD_pchar((T%10)+48);
+ 129   1          LCD_pstr("*C");
+ 130   1          delay_ms(100);
+ 131   1        }
+ 132          void LCD_temp(unsigned char temp, unsigned char lim)
+ 133            {
+ 134   1          LCD_pstr(" NHIET DO: ");
+ 135   1          LCD_pchar((temp/100)+48);
+ 136   1          LCD_pchar(((temp%100)/10)+48);
+ 137   1          LCD_pchar((temp%10)+48);
+ 138   1          LCD_pstr("*C");
+ 139   1          LCD_gotoxy(0,1);
+ 140   1          LCD_pstr(" alarm: ");
+ 141   1          LCD_pchar((lim/100)+48);
+ 142   1          LCD_pchar(((lim%100)/10)+48);
+ 143   1          LCD_pchar((lim%10)+48);
+ 144   1          LCD_pstr("*C");
+ 145   1          delay_ms(100);
+ 146   1        }
+ 147            /*----------------------------------------*-
+ 148          ADC 0808 FUNCTION
+ 149          -*----------------------------------------*/
+ 150          
+ 151          unsigned char ADC_read()
+ 152          {
+ 153   1        unsigned char kq; 
+ 154   1        ADC_OUT=0xff;
+ 155   1        ADC_A=0;
+ 156   1        ADC_B=0;
+ 157   1        ADC_C=0;
+ 158   1        ADC_ALE=1;
+ 159   1        ADC_START=1;
+ 160   1        ADC_ALE=0;
+ 161   1        ADC_START=0;
+ 162   1        while(ADC_EOC);
+ 163   1        while(!ADC_EOC);
+ 164   1        ADC_OE=1;
+ 165   1        kq=ADC_OUT;
+ 166   1        ADC_OE=0;
+ 167   1        return kq;
+ 168   1      }
+ 169          
+ 170          void TIMER_init()
+ 171            {   
+ 172   1          TMOD = 0x02;
+ 173   1          TH0=236;
+ 174   1          TL0=236;
+ 175   1          TR0=1;
+ 176   1          ET0=1;
+ 177   1          EA=1;
+ 178   1        }
+C51 COMPILER V9.60.0.0   FUNCTIONLM35                                                      05/28/2021 16:49:43 PAGE 4   
+
+ 179          void EX0_init()
+ 180            {
+ 181   1          EX0=1;
+ 182   1          IT0=1;
+ 183   1          EA=1;
+ 184   1        }
+ 185            void INT_Timer0()interrupt 1
+ 186            {
+ 187   1          ADC_CLK=~ADC_CLK;
+ 188   1        }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    465    ----
+   CONSTANT SIZE    =     36    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       6
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

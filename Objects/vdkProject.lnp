@@ -1,0 +1,4 @@
+".\Objects\mainLM35.obj",
+".\Objects\functionLM35.obj" 
+TO ".\Objects\vdkProject" 
+PRINT(".\Listings\vdkProject.m51") RAMSIZE(256) 
